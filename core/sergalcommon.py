@@ -4,8 +4,8 @@ from enum import Enum
 from json import JSONDecodeError
 import json
 import logging
-import requests
-import unidecode
+import os
+import configparser
 import mysql.connector
 import xml
 import xml.etree.ElementTree as ET
@@ -13,6 +13,38 @@ import pprint
 from core import databasemodule
 from core.databaseversions import databaseVersions
 
+def checkSettings():
+    if not os.path.isfile("settings.conf"):
+            print("settings -> Config file not present!")
+            settings = configparser.ConfigParser()
+            settings['connections'] = {
+                'mysql-host': '127.0.0.1',
+                'mysql-username': 'sergal',
+                'mysql-password': 'somepassword',
+                'log-to-db': False,
+            }
+            settings['discord'] = {
+                'bot-name': 'SergalBot',
+                'api-key': 'CHANGE_KEY_IN_SETTINGS',
+                'hikari-loglevel': logging.DEBUG
+            }
+            settings['application'] = {
+                'loglevel': logging.INFO,
+                'startup-update': True,
+                'loglevels-available': f'{logging.DEBUG}, {logging.INFO}, {logging.WARNING}, {logging.ERROR}, {logging.CRITICAL}, {logging.FATAL}',
+                'logname': 'SergalBot # .log will be appended',
+                'testing': False
+            }
+            with open("settings.conf", 'w') as configfile:
+                settings.write(configfile)
+            
+            print("Complete setup in settings.conf !")
+            exit()
+    else:
+        settings = configparser.ConfigParser()
+        settings.read("settings.conf")
+        return settings
+            
 class SergalBot():
 
     class databaseUpdater:
@@ -93,11 +125,11 @@ class SergalBot():
                     self.commitUpdate()
                     self.get_db_ver()                 
 
-    def __init__(self, dbHost, dbuser, dbpassword, testing=False, skip_updater=False) -> None:
+    def __init__(self, settings: configparser.ConfigParser, testing=False, skip_updater=False, update_only=False) -> None:
         self.db_version = None
-        self.dbHost = dbHost
-        self.dbuser = dbuser 
-        self.dbpassword = dbpassword
+        self.dbHost = settings.get("connections", "mysql-host")
+        self.dbuser = settings.get("connections", "mysql-username")
+        self.dbpassword = settings.get("connections", "mysql-password")
 
         logging.debug("Connecting to MySQL...")
         if not testing:
