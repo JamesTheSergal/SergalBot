@@ -16,7 +16,7 @@ and is based on this quote:
 *It really does help when writing code*
 
 ## Features
-- Uses MySQL
+- Uses MySQL + MySQL Interface to make it easy!
 - Automatic Database Updater
 - Permissions Management ( :x: coming soon)
 - Pathfinders DM Helper ( :x: coming soon)
