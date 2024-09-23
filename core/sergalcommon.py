@@ -1,14 +1,10 @@
 import calendar
 from datetime import datetime
 from enum import Enum
-from json import JSONDecodeError
-import json
 import logging
 import os
 import configparser
 import mysql.connector
-import xml
-import xml.etree.ElementTree as ET
 import pprint
 from core import databasemodule
 from core.databaseversions import databaseVersions
@@ -123,6 +119,7 @@ class SergalBot():
                 self.updates_pending = self.update_gather()
                 if runNow:
                     self.commitUpdate()
+                    self.db.refreshTables()
                     self.get_db_ver()                 
 
     def __init__(self, settings: configparser.ConfigParser, testing=False, skip_updater=False, update_only=False) -> None:
