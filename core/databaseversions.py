@@ -89,6 +89,7 @@ class databaseVersions:
                     self=localize,
                     command="ALTER TABLE `errors` ADD `was_read` TINYINT NOT NULL DEFAULT '0' AFTER `info`;\n"
                 ),
+                lambda: db.wrapex(self=localize, insert=True),
                 lambda: db.insert(
                     self=localize,
                     table="settings",

@@ -133,11 +133,21 @@ class SergalBot():
 
         logging.debug("Connecting to MySQL...")
         if not testing:
-            self.db = databasemodule.databaseHandler(dbHost, dbuser, dbpassword, "Sergal-prod")
+            self.db = databasemodule.databaseHandler(self.dbHost, self.dbuser, self.dbpassword, "Sergal-prod")
         else:
-            self.db = databasemodule.databaseHandler(dbHost, dbuser, dbpassword, "Sergal-dev")
+            self.db = databasemodule.databaseHandler(self.dbHost, self.dbuser, self.dbpassword, "Sergal-dev", testing=True)
 
-        if not skip_updater:
+        if update_only:
+            logging.info("Update only was set -> Skipping to updater right now!")
+            updater = self.databaseUpdater(self.db, runNow=True)
+            if updater.problem:
+                logging.critical("SergalBot -> Updater reported a problem! Exiting Immediately!")
+                exit()
+            else:
+                self.db_version = updater.db_version
+                logging.info(f'Database v{self.db_version}')
+
+        if skip_updater == False and update_only == False:
             updater = self.databaseUpdater(self.db, runNow=True)
             if updater.problem:
                 logging.critical("SergalBot -> Updater reported a problem! Exiting Immediately!")
