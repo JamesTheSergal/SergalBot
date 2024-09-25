@@ -1,11 +1,22 @@
+import configparser
 import logging
 import mysql.connector
 import pprint
 from enum import Enum
 
 class databaseHandler:
+    """
+    Base class for handling the MySQL database.
+    This class has the database object, builds queries and returns data from the MySQL server.
+    """
 
     class dataTypes(Enum):
+        """Data types that the database module supports.
+
+        Currently supported:
+        VARCHAR, TINYTEXT, TEXT, INT, TINYINT, BIGINT
+        """
+
         VARCHAR = "VARCHAR"
         TINYTEXT = "TINYTEXT"
         TEXT = "TEXT"
@@ -14,6 +25,7 @@ class databaseHandler:
         BIGINT = "BIGINT"
 
     def strQuote(self, data):
+        """Stupid function to automatically add quotation for str type objects."""
         if isinstance(data, str):
             return f'"{data}"'
         else:
@@ -53,6 +65,7 @@ class databaseHandler:
             logging.debug("Running in testing mode. All queryies will be output for debugging.")
 
     def refreshTables(self):
+        """Updates the databaseHandler's internal list of tables using the current MySQL connection."""
         logging.debug("Database -> Refresh table request")
         self.tables = []
         # Get the tables we have 
@@ -63,8 +76,26 @@ class databaseHandler:
             self.tables.append(name)
         logging.debug("Database -> Refresh table request complete.")
 
-    def defineColumn(self, name=None, dataType=None, primaryKey=False, unique=False, notNull=False, fin=False, fin_ex=False, auto_inc=False, auto_inc_by=None, defaultval=None):
+    def defineColumn(self, name:str|None, dataType:dataTypes, primaryKey:bool=False, unique:bool=False, notNull:bool=False, fin:bool=False, fin_ex:bool=False, auto_inc:bool=False, auto_inc_by:int|None=None, defaultval:int|str=None):
+        """
+        This method adds a column definition to the MySQL CREATE TABLE statement, add adds it into databaseHandler.currentQuery (str)
 
+        ! - databaseHandler.createTable must be called first to order the operations correctly.
+
+        ! - databaseHandler.wrapex must be called to complete the query.
+
+        Parameters:
+            name (None | Str): name of column
+            dataType (None | databaseHandler.dataTypes(enum)): Defines datatype of column
+            primaryKey (bool): 
+            unique (bool): 
+            notNull (bool): 
+            fin (bool): Specifies the end of the query.
+            fin_ex (bool): Specifies the end of the query and executes immediately.
+            auto_inc (bool): 
+            auto_inc_by (int): Specifies the value to auto increment the entry.
+            defaultval (int|str): Specifies the default value of the column upon insertion.
+        """
         if name != None and dataType != None:
             self.currentQuery += f'\t{name} {dataType.value}'
 
@@ -105,12 +136,28 @@ class databaseHandler:
         else: 
             if unique == False and primaryKey == False:
                 self.currentQuery += ',\n'
-            
-            
+                     
     def createTable(self, name: str):
+        """This method starts the CREATE TABLE statement. This should be followed with defineColumn statements."""
         self.currentQuery += f'CREATE TABLE {name} (\n'
 
-    def select(self, table, columns:list=[], where:list=None, where_val:list=None, where_and=False, where_or=False, ops:list=[]):
+    def select(self, table:str, columns:list[str]=[], where:list[str]=None, where_val:list=None, where_and=False, where_or=False, ops:list[str]=[]):
+        """
+        This method forms a SELECT MySQL statement, add adds it into databaseHandler.currentQuery (str)
+
+        ! - Select executes immedately (Clears currentQuery)
+
+        ! - where, where_val, and ops are aligned to each other. Ex. The value of the column you want to evaluate must be in the same list index as the where location.
+
+        Parameters:
+            table (Str): Name of table we are looking in.
+            columns (list[str]): list of columns we would like to get the data from. If none is given, all from the table will be returned. '*'
+            where (list[str]): column(s) for testing values to meet requirement.
+            where_val (list[]): value(s) to test against where columns.
+            where_and (bool): specifies we will check multiple where locations.
+            where_or (bool): specifies we will use the or statement.
+            ops (list[str]): default checks are done with '='. Setting this list with '<' '>' or other operators will change the condition in which we evaluate the where_val.
+        """
         self.currentQuery = "SELECT "
         if len(columns) == 0:
             selColm = "*"
@@ -164,6 +211,16 @@ class databaseHandler:
         return self.wrapex(fetch=True)
 
     def insert(self, table, columns:list, data:list):
+        """
+        This method forms a INSERT MySQL statement, add adds it into databaseHandler.currentQuery (str)
+
+        ! - Insert executes immedately (Clears currentQuery)
+
+        Parameters:
+            table (Str): Name of table we are looking in.
+            columns (list[str]): list of columns we would like to add data to.
+            data (list[]): data to be inserted into columns.
+        """
         self.currentQuery += f'INSERT INTO {table}'
 
         last = columns[-1]
@@ -200,6 +257,16 @@ class databaseHandler:
         return self.wrapex(insert=True)
 
     def update(self, table, columns:list, data:list, where, wherevalue):
+        """
+        This method forms a UPDATE MySQL statement, add adds it into databaseHandler.currentQuery (str)
+
+        ! - Update executes immedately (Clears currentQuery)
+
+        Parameters:
+            table (Str): Name of table we are looking in.
+            columns (list[str]): list of columns we would like to add data to.
+            data (list[]): data to be inserted into columns.
+        """
         self.currentQuery = f'UPDATE {table} SET '
 
 
@@ -217,8 +284,9 @@ class databaseHandler:
         return self.wrapex(insert=True)
 
     def tableExist(self, table, make=False):
+        """Checks for a tables existance. If make is set true it will call the createTable function."""
         if table in self.tables:
-            return True #TODO: make an exception instead
+            return True #TODO: make an exception instead - Future me here, nahhh. It's fine.
         else:
             logging.warning(f'Table -> {table} - was not present. {make=}')
             if make:
@@ -226,6 +294,7 @@ class databaseHandler:
             return False
         
     def wrapex(self, fetch=False, insert=False):
+        """This method executes all queries in databaseHandler.currentQuery - setting fetch returns the results. Setting insert ensures that we commit any modifications."""
         if not self.testing:
             logging.debug(f'Executing current query... -> \n{self.currentQuery}')
             self.cursor.execute(self.currentQuery)
@@ -258,6 +327,7 @@ class databaseHandler:
             logging.debug(f'wrapex run with {fetch=} {insert=} Query -> \n{pprint.pformat(self.currentQuery)}')
 
     def insertRawCommand(self, command):
+        """Simply inserts your command into the queue with no formatting. Ensure to append a new line at the end."""
         self.currentQuery = command
             
 
