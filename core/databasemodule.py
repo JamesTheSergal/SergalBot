@@ -19,14 +19,17 @@ class databaseHandler:
         else:
             return data
 
-    def __init__(self, mysqlHost, user, password, database, testing=False) -> None:
+    def __init__(self, settings: configparser.ConfigParser, database, testing=False) -> None:
         self.testing = testing
+        self.dbHost = settings.get("connections", "mysql-host")
+        self.dbuser = settings.get("connections", "mysql-username")
+        self.dbpassword = settings.get("connections", "mysql-password")
         if not testing:
             try:
                 self.db = mysql.connector.connect(
-                    host = mysqlHost,
-                    user = user,
-                    password = password,
+                    host = self.dbHost,
+                    user = self.dbuser,
+                    password = self.dbpassword,
                     database = database
                 )
             except mysql.connector.Error as e:

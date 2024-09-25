@@ -124,15 +124,12 @@ class SergalBot():
 
     def __init__(self, settings: configparser.ConfigParser, testing=False, skip_updater=False, update_only=False) -> None:
         self.db_version = None
-        self.dbHost = settings.get("connections", "mysql-host")
-        self.dbuser = settings.get("connections", "mysql-username")
-        self.dbpassword = settings.get("connections", "mysql-password")
 
         logging.debug("Connecting to MySQL...")
         if not testing:
-            self.db = databasemodule.databaseHandler(self.dbHost, self.dbuser, self.dbpassword, "Sergal-prod")
+            self.db = databasemodule.databaseHandler(settings=settings, database="Sergal-prod")
         else:
-            self.db = databasemodule.databaseHandler(self.dbHost, self.dbuser, self.dbpassword, "Sergal-dev", testing=True)
+            self.db = databasemodule.databaseHandler(settings=settings, database="Sergal-dev", testing=True)
 
         if update_only:
             logging.info("Update only was set -> Skipping to updater right now!")
