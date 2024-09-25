@@ -21,6 +21,7 @@ def checkSettings():
             }
             settings['discord'] = {
                 'bot-name': 'SergalBot',
+                'bot-owner-id': '299742661290622977',
                 'api-key': 'CHANGE_KEY_IN_SETTINGS',
                 'hikari-loglevel': logging.DEBUG
             }

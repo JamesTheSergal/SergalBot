@@ -6,6 +6,11 @@ import pprint
 plugin = crescent.Plugin[hikari.GatewayBot, None]()
 fallback_group = crescent.Group("fallback")
 
+# Standardized imports per module #
+from main import settings
+import core.sergalcommon as sergal
+import configparser
+# ------------------------------- #
 
 @plugin.include
 @fallback_group.child
@@ -17,7 +22,7 @@ class Load:
     load_target = crescent.option(str, "Plugin to load", name="plugin")
 
     async def callback(self, ctx: crescent.Context):
-        if ctx.user.id == 299742661290622977:
+        if ctx.user.id == settings.getint("discord", "bot-owner-id"):
             print(f'Loading {self.load_target} ...')
             try:
                 plugin.client.plugins.load(self.load_target)
@@ -37,7 +42,7 @@ class Unload:
     unload_target = crescent.option(str, "Plugin to load", name="plugin")
 
     async def callback(self, ctx: crescent.Context):
-        if ctx.user.id == 299742661290622977:
+        if ctx.user.id == settings.getint("discord", "bot-owner-id"):
             print(f'Unloading {self.unload_target} ...')
             try:
                 plugin.client.plugins.unload(self.unload_target)
@@ -57,7 +62,7 @@ class Reload:
     reload_target = crescent.option(str, "Plugin to load", name="plugin")
 
     async def callback(self, ctx: crescent.Context):
-        if ctx.user.id == 299742661290622977:
+        if ctx.user.id == settings.getint("discord", "bot-owner-id"):
             print(f'Reloading {self.reload_target} ...')
             try:
                 plugin.client.plugins.load(self.reload_target, refresh=True) #TODO: Handle KeyError when plugin failed to previously reload.
@@ -76,7 +81,7 @@ class Reload:
 class Purge:
 
     async def callback(self, ctx: crescent.Context):
-        if ctx.user.id == 299742661290622977:
+        if ctx.user.id == settings.getint("discord", "bot-owner-id"):
             print(f'Purging commands...')
             await ctx.defer(ephemeral=True)
             await plugin.client.commands.purge_commands()

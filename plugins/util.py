@@ -7,6 +7,11 @@ import pprint
 plugin = crescent.Plugin[hikari.GatewayBot, None]()
 utils_group = crescent.Group("utils")
 
+# Standardized imports per module #
+from main import settings
+import core.sergalcommon as sergal
+import configparser
+# ------------------------------- #
 
 @plugin.include
 @utils_group.child
