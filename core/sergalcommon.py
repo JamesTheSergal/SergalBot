@@ -151,15 +151,18 @@ class SergalBot():
                 logging.info(f'Database v{self.db_version}')
 
     def getRightNowTime():
+        """Generates GMT time in seconds. (A UNIX timestamp)"""
         dt = datetime.today()
         seconds = calendar.timegm(dt.timetuple())
         return seconds
 
     def secConverter(self, seconds:int) -> str:
+        """takes the seconds supplied and converts into formatted amount of minutes."""
         minutes = int(seconds/60)
         return f'{minutes} Minutes'
     
     def reportError(self, type, info):
+        """Sends an error report to the Database."""
         self.db.currentQuery = ""
         self.db.insert("errors",
                       ["type", "info"],
@@ -168,13 +171,16 @@ class SergalBot():
         logging.info("Error reported")
 
     def getChannelSetting(self, guildID, channelID):
+        """Uses guildID and returns a whole list of results for that guild. (WILL BE CHANGED)"""
         results = self.db.select("channel_settings", where=["guild_id"], where_val=[guildID])
         return results
 
     def setChannelSetting(self, guildID, channelID, setting):
+        """Uses sets a non-unique setting for the guild and channel."""
         self.db.insert("channel_settings", columns=["guild_id", "channel_id", "setting"], data=[guildID, channelID, setting])
 
     def getSetting(self, settingName):
+        """Returns the specified setting name from the database."""
         results = self.db.select("settings", where=["setting"], where_val=[settingName])
         if len(results) == 0:
             logging.warning(f'Settings -> Asked for {settingName=} but it was not set in the database.')
@@ -200,6 +206,7 @@ class SergalBot():
             return results
         
     def setSetting(self, settingName, value):
+        """Sets the specified setting name from the database. If it exists already, it will be updated."""
         logging.debug("Settings -> Testing entry before changing database...")
         test = self.db.select("settings", where=["setting"], where_val=[settingName])
 
@@ -241,6 +248,7 @@ class SergalBot():
                                wherevalue=settingName)
     
     def getStat(self, statName):
+        """Gets an internal statistic counter by name."""
         results = self.db.select("stat", where=["stat"], where_val=[statName])
         if len(results) == 0:
             logging.warning(f'Stats -> Asked for {statName=} but it was not set in the database.')
@@ -266,6 +274,7 @@ class SergalBot():
             return results
         
     def setStat(self, statName, value):
+        """Sets an internal statistic counter by name. If it exists already, it will be updated."""
         logging.debug("Stat -> Testing entry before changing database...")
         test = self.db.select("stat", where=["stat"], where_val=[statName])
 
