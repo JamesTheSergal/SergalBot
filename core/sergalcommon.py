@@ -8,6 +8,8 @@ import mysql.connector
 import pprint
 from core import databasemodule
 from core.databaseversions import databaseVersions
+import hikari
+import crescent
 
 def checkSettings():
     if not os.path.isfile("settings.conf"):
@@ -171,15 +173,6 @@ class SergalBot():
         )
         logging.info("Error reported")
 
-    def getChannelSetting(self, guildID, channelID):
-        """Uses guildID and returns a whole list of results for that guild. (WILL BE CHANGED)"""
-        results = self.db.select("channel_settings", where=["guild_id"], where_val=[guildID])
-        return results
-
-    def setChannelSetting(self, guildID, channelID, setting):
-        """Uses sets a non-unique setting for the guild and channel."""
-        self.db.insert("channel_settings", columns=["guild_id", "channel_id", "setting"], data=[guildID, channelID, setting])
-
     def getSetting(self, settingName):
         """Returns the specified setting name from the database."""
         results = self.db.select("settings", where=["setting"], where_val=[settingName])
@@ -315,3 +308,14 @@ class SergalBot():
                                [value],
                                where="stat",
                                wherevalue=statName)
+                
+    def getChannelSetting(self, guildID, channelID):
+        """Uses guildID and returns a whole list of results for that guild. (WILL BE CHANGED)"""
+        results = self.db.select("channel_settings", where=["guild_id"], where_val=[guildID])
+        return results
+
+    def setChannelSetting(self, guildID, channelID, setting):
+        """Uses sets a non-unique setting for the guild and channel."""
+        self.db.insert("channel_settings", columns=["guild_id", "channel_id", "setting"], data=[guildID, channelID, setting])
+
+    
