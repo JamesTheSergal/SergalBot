@@ -19,6 +19,7 @@ def checkSettings():
                 'mysql-host': '127.0.0.1',
                 'mysql-username': 'sergal',
                 'mysql-password': 'somepassword',
+                'mysql-db-name': "Sergal",
                 'log-to-db': False,
             }
             settings['discord'] = {
@@ -128,11 +129,13 @@ class SergalBot():
     def __init__(self, settings: configparser.ConfigParser, testing=False, skip_updater=False, update_only=False) -> None:
         self.db_version = None
 
+        dbname = settings.get("connections", "mysql-db-name")
+
         logging.debug("Connecting to MySQL...")
         if not testing:
-            self.db = databasemodule.databaseHandler(settings=settings, database="Sergal-prod")
+            self.db = databasemodule.databaseHandler(settings=settings, database=dbname)
         else:
-            self.db = databasemodule.databaseHandler(settings=settings, database="Sergal-dev", testing=True)
+            self.db = databasemodule.databaseHandler(settings=settings, database=dbname+"-dev", testing=True)
 
         if update_only:
             logging.info("Update only was set -> Skipping to updater right now!")
