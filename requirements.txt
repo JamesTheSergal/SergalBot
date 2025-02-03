@@ -1,5 +1,5 @@
 hikari-crescent==1.0.0
-hikari==2.0.0
+hikari==2.0.0.dev126
 mysql_connector_repackaged==0.3.1
 openai==1.50.2
 webcolors==24.8.0
